@@ -4,6 +4,10 @@
     <button type="submit">Очистить все маршруты</button>
 </form>
 
+<form method="GET" action="{{ url_for('export_routes') }}">
+    <button type="submit">📥 Экспортировать в CSV</button>
+</form>
+
 <table border="1" cellpadding="6">
     <thead>
         <tr>

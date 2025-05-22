@@ -27,7 +27,15 @@
     </div>
 
     {% if session.get('username') %}
-    <p>Привет, {{ session['username'] }} | <a href="{{ url_for('logout') }}">Выйти</a> | <a href="{{ url_for('history') }}">Мои маршруты</a></p>
+    <p>
+        Привет, {{ session['username'] }} |
+        <a href="{{ url_for('logout') }}">Выйти</a> |
+        <a href="{{ url_for('history') }}">Мои маршруты</a>
+        {% if session.get('is_admin') %}
+            | <a href="{{ url_for('admin_panel') }}">Панель администратора</a>
+        {% endif %}
+    </p>
+    
 {% else %}
     <a href="{{ url_for('login') }}">Войти</a> | <a href="{{ url_for('register') }}">Регистрация</a>
 {% endif %}

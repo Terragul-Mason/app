@@ -1,0 +1,47 @@
+<p>
+    Привет, {{ session['username'] }} |
+    <a href="{{ url_for('logout') }}">Выйти</a>
+</p>
+
+<h2>🛠️ Панель администратора</h2>
+
+<form method="POST" action="{{ url_for('admin_delete_all') }}" onsubmit="return confirm('Удалить все маршруты?');">
+    <button type="submit">Удалить все маршруты</button>
+</form>
+
+<form method="GET" action="{{ url_for('admin_export') }}">
+    <button type="submit">Экспортировать все маршруты в CSV</button>
+</form>
+
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Пользователь</th>
+            <th>Начало</th>
+            <th>Конец</th>
+            <th>Профиль</th>
+            <th>Расстояние</th>
+            <th>Время</th>
+            <th>Дата</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for route in routes %}
+        <tr>
+            <td>{{ route.user.username }}</td>
+            <td>{{ route.start_point }}</td>
+            <td>{{ route.end_point }}</td>
+            <td>{{ route.profile }}</td>
+            <td>{{ (route.distance / 1000)|round(2) }} км</td>
+            <td>{{ (route.duration / 60)|round }} мин</td>
+            <td>{{ route.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+                <form method="POST" action="{{ url_for('admin_delete_route', route_id=route.id) }}" onsubmit="return confirm('Удалить?');">
+                    <button type="submit">Удалить</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

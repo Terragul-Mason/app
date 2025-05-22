@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Построение маршрута</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Построение маршрута на карте</h1>
+
+    <div id="help-banner">
+        🗺️ Кликните по карте дважды, чтобы выбрать начальную и конечную точки маршрута.<br>
+        💾 Последний маршрут сохраняется автоматически и восстанавливается при открытии страницы.
+    </div>
+    
+    <div class="controls">
+        <select id="route-type">
+            <option value="driving">Автомобиль</option>
+            <option value="walking">Пешком</option>
+            <option value="cycling">Велосипед</option>
+        </select>
+
+        <button id="build-route" disabled>Построить маршрут</button>
+        <button id="reset-map">Очистить карту</button>
+    </div>
+
+    <div id="map"></div>
+
+    <div id="route-info"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -7,6 +7,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
+<button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+
 <body>
     <h1>Построение маршрута на карте</h1>
 

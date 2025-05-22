@@ -1,43 +1,60 @@
-<div class="container">
-    <h2>Мои маршруты</h2>
-    <div class="top-buttons">
-        <form method="post" action="{{ url_for('clear_routes') }}" style="display:inline;">
-            <button type="submit">🗑️ Очистить все маршруты</button>
-        </form>
-        <form method="get" action="{{ url_for('export_routes') }}" style="display:inline;">
-            <button type="submit">📥 Экспортировать в CSV</button>
-        </form>
-    </div>
-<table border="1" cellpadding="6">
-    <thead>
-        <tr>
-            <th>Начало</th>
-            <th>Конец</th>
-            <th>Профиль</th>
-            <th>Расстояние (км)</th>
-            <th>Время (мин)</th>
-            <th>Дата</th>
-            <th>Удалить</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for route in routes %}
-        <tr>
-            <td>{{ route.start_point }}</td>
-            <td>{{ route.end_point }}</td>
-            <td>{{ route.profile }}</td>
-            <td>{{ (route.distance / 1000)|round(2) }}</td>
-            <td>{{ (route.duration / 60)|round }}</td>
-            <td>{{ route.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
-            <td>
-                <form method="POST" action="{{ url_for('delete_route', route_id=route.id) }}" onsubmit="return confirm('Удалить этот маршрут?');">
-                    <button type="submit">Удалить</button>
-                </form>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ session.get('theme', 'light') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Мои маршруты</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-<a href="{{ url_for('index') }}" class="back-link">← Назад на карту</a>
-</div>
+    <button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+
+    <div class="container">
+        <h2>Мои маршруты</h2>
+
+        <div class="top-buttons">
+            <form method="post" action="{{ url_for('clear_routes') }}" style="display:inline;">
+                <button type="submit">🗑️ Очистить все маршруты</button>
+            </form>
+            <form method="get" action="{{ url_for('export_routes') }}" style="display:inline;">
+                <button type="submit">📥 Экспортировать в CSV</button>
+            </form>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Начало</th>
+                    <th>Конец</th>
+                    <th>Профиль</th>
+                    <th>Расстояние (км)</th>
+                    <th>Время (мин)</th>
+                    <th>Дата</th>
+                    <th>Удалить</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for route in routes %}
+                <tr>
+                    <td>{{ route.start_point }}</td>
+                    <td>{{ route.end_point }}</td>
+                    <td>{{ route.profile }}</td>
+                    <td>{{ (route.distance / 1000)|round(2) }}</td>
+                    <td>{{ (route.duration / 60)|round }}</td>
+                    <td>{{ route.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('delete_route', route_id=route.id) }}" onsubmit="return confirm('Удалить этот маршрут?');">
+                            <button type="submit">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <a href="{{ url_for('index') }}" class="back-link">← Назад на карту</a>
+    </div>
+
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

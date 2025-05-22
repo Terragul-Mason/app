@@ -1,7 +1,22 @@
-<h2>Регистрация</h2>
-<form method="POST">
-    <input type="text" name="username" placeholder="Имя пользователя" required><br>
-    <input type="password" name="password" placeholder="Пароль" required><br>
-    <button type="submit">Зарегистрироваться</button>
-</form>
-<a href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a>
+<!DOCTYPE html>
+<html lang="ru" data-theme="{{ session.get('theme', 'light') }}">
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+
+    <div class="auth-container">
+        <h2>Регистрация</h2>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Имя пользователя" required>
+            <input type="password" name="password" placeholder="Пароль" required>
+            <button type="submit">Зарегистрироваться</button>
+        </form>
+        <a href="{{ url_for('login') }}">Уже есть аккаунт? Войти</a>
+    </div>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

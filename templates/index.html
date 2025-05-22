@@ -26,6 +26,12 @@
         <button id="reset-map">Очистить карту</button>
     </div>
 
+    {% if session.get('username') %}
+    <p>Привет, {{ session['username'] }} | <a href="{{ url_for('logout') }}">Выйти</a></p>
+{% else %}
+    <a href="{{ url_for('login') }}">Войти</a> | <a href="{{ url_for('register') }}">Регистрация</a>
+{% endif %}
+
     <div id="map"></div>
 
     <div id="route-info"></div>

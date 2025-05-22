@@ -1,13 +1,13 @@
-<h2>Мои маршруты</h2>
-
-<form method="POST" action="{{ url_for('delete_all_routes') }}" onsubmit="return confirm('Удалить все маршруты?');">
-    <button type="submit">Очистить все маршруты</button>
-</form>
-
-<form method="GET" action="{{ url_for('export_routes') }}">
-    <button type="submit">📥 Экспортировать в CSV</button>
-</form>
-
+<div class="container">
+    <h2>Мои маршруты</h2>
+    <div class="top-buttons">
+        <form method="post" action="{{ url_for('clear_routes') }}" style="display:inline;">
+            <button type="submit">🗑️ Очистить все маршруты</button>
+        </form>
+        <form method="get" action="{{ url_for('export_routes') }}" style="display:inline;">
+            <button type="submit">📥 Экспортировать в CSV</button>
+        </form>
+    </div>
 <table border="1" cellpadding="6">
     <thead>
         <tr>
@@ -39,4 +39,5 @@
     </tbody>
 </table>
 
-<a href="{{ url_for('index') }}">⬅ Назад на карту</a>
+<a href="{{ url_for('index') }}" class="back-link">← Назад на карту</a>
+</div>

@@ -82,6 +82,14 @@ def delete_route(route_id):
 
     return redirect(url_for('history'))
 
+@app.route('/clear_routes', methods=['POST'])
+def clear_routes():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    Route.query.filter_by(user_id=session['user_id']).delete()
+    db.session.commit()
+    return redirect(url_for('history'))
+
 @app.route('/delete_all_routes', methods=['POST'])
 def delete_all_routes():
     if 'user_id' not in session:

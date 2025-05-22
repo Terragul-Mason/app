@@ -3,7 +3,9 @@
     <a href="{{ url_for('logout') }}">Выйти</a>
 </p>
 
-<h2>🛠️ Панель администратора</h2>
+<div class="container">
+    <h2>🛠️ Панель администратора</h2>
+</div>
 
 <form method="POST" action="{{ url_for('admin_delete_all') }}" onsubmit="return confirm('Удалить все маршруты?');">
     <button type="submit">Удалить все маршруты</button>

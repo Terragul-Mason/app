@@ -29,6 +29,19 @@ class User(db.Model):
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
+class Route(db.Model):
+    __tablename__ = 'routes'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    start_point = db.Column(db.String, nullable=False)
+    end_point = db.Column(db.String, nullable=False)
+    profile = db.Column(db.String, nullable=False)
+    distance = db.Column(db.Float)
+    duration = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+
+    user = db.relationship('User', backref=db.backref('routes', lazy=True))
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -76,26 +89,40 @@ def index():
 def route():
     data = request.get_json()
     points = data['points']
-    profile = data.get('profile', 'driving')  # получаем тип маршрута, по умолчанию машина
+    profile = data['profile']
 
-    coords = ';'.join([f"{lng},{lat}" for lng, lat in points])
+    lng1, lat1 = points[0]
+    lng2, lat2 = points[1]
 
-    osrm_url = f"http://router.project-osrm.org/route/v1/{profile}/{coords}?overview=full&geometries=geojson"
-    response = requests.get(osrm_url)
+    url = f"http://router.project-osrm.org/route/v1/{profile}/{lng1},{lat1};{lng2},{lat2}?overview=full&geometries=geojson"
+    response = requests.get(url)
+    route_data = response.json()
 
-    if response.status_code != 200:
-        return jsonify({'error': 'Ошибка запроса к OSRM'}), 500
+    coords = route_data['routes'][0]['geometry']['coordinates']
+    distance = route_data['routes'][0]['distance']
+    duration = route_data['routes'][0]['duration']
 
-    route = response.json()
+    leaflet_coords = [[lat, lng] for lng, lat in coords]
 
-    route_coords = route['routes'][0]['geometry']['coordinates']
-    leaflet_coords = [[lat, lng] for lng, lat in route_coords]
+    # Сохраняем маршрут в базу, если пользователь залогинен
+    if 'user_id' in session:
+        route_record = Route(
+            user_id=session['user_id'],
+            start_point=f"{lat1:.6f},{lng1:.6f}",
+            end_point=f"{lat2:.6f},{lng2:.6f}",
+            profile=profile,
+            distance=distance,
+            duration=duration
+        )
+        db.session.add(route_record)
+        db.session.commit()
 
     return jsonify({
-    'route': leaflet_coords,
-    'distance': route['routes'][0]['distance'],
-    'duration': route['routes'][0]['duration']
-})
+        'route': leaflet_coords,
+        'distance': distance,
+        'duration': duration
+    })
+
 
 
 if __name__ == '__main__':

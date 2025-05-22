@@ -59,6 +59,34 @@ def register():
 
     return render_template('register.html')
 
+@app.route('/history')
+def history():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_routes = Route.query.filter_by(user_id=session['user_id']).order_by(Route.created_at.desc()).all()
+    return render_template('history.html', routes=user_routes)
+
+@app.route('/delete_route/<int:route_id>', methods=['POST'])
+def delete_route(route_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    route = Route.query.get(route_id)
+    if route and route.user_id == session['user_id']:
+        db.session.delete(route)
+        db.session.commit()
+
+    return redirect(url_for('history'))
+
+@app.route('/delete_all_routes', methods=['POST'])
+def delete_all_routes():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    Route.query.filter_by(user_id=session['user_id']).delete()
+    db.session.commit()
+    return redirect(url_for('history'))
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

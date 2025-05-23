@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="ru" data-theme="{{ session.get('theme', 'light') }}">
 <head>
     <meta charset="UTF-8">
     <title>Построение маршрута</title>
@@ -7,11 +7,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-
-<button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
-<script src="{{ url_for('static', filename='theme.js') }}"></script>
-
 <body>
+    <button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+
     <h1>Построение маршрута на карте</h1>
 
     <div id="help-banner">
@@ -39,17 +37,18 @@
             | <a href="{{ url_for('admin_panel') }}">Панель администратора</a>
         {% endif %}
     </p>
-    
-{% else %}
-    <a href="{{ url_for('login') }}">Войти</a> | <a href="{{ url_for('register') }}">Регистрация</a>
-{% endif %}
-
+    {% else %}
+    <p>
+        <a href="{{ url_for('login') }}">Войти</a> | 
+        <a href="{{ url_for('register') }}">Регистрация</a>
+    </p>
+    {% endif %}
 
     <div id="map"></div>
-
     <div id="route-info"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

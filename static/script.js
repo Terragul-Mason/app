@@ -1,23 +1,131 @@
 // Создаем карту и ставим центр на Москву
 var map = L.map('map').setView([55.751244, 37.618423], 10);
+loadUserMarkers();
 
 // Добавляем слой OpenStreetMap
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'Карта © OpenStreetMap участники'
 }).addTo(map);
 
-// Массив для хранения точек и маркеров
+// Массивы
 var points = [];
 var markers = [];
 var routeLine = null;
+let userMarkers = [];
+let activeMarkerId = null;
 
-// Функция для добавления маркера с подписью
+// Функции
 function addMarker(lat, lng, label) {
     var marker = L.marker([lat, lng]).addTo(map).bindPopup(label).openPopup();
     markers.push(marker);
 }
 
-// Обработка клика на карту
+function loadUserMarkers() {
+    fetch("/get_markers")
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(marker => {
+                const m = L.marker([marker.lat, marker.lon])
+                    .addTo(map)
+                    .bindPopup(marker.name)
+                    .on("click", () => openEditModal(marker));
+
+                // Показываем всплывающую подсказку при наведении
+                setTimeout(() => {
+                    if (m.getElement()) {
+                        m.getElement().setAttribute("title", marker.name);
+                    }
+                }, 0);
+
+                userMarkers.push({ leaflet: m, data: marker });
+            });
+        });
+}
+
+function openEditModal(marker) {
+    document.getElementById("markerEditText").value = marker.name;
+    activeMarkerId = marker.id;
+    document.getElementById("markerModal").classList.remove("hidden");
+}
+
+function closeModal() {
+    document.getElementById("markerModal").classList.add("hidden");
+    activeMarkerId = null;
+}
+
+document.getElementById("saveMarkerBtn").addEventListener("click", () => {
+    const newName = document.getElementById("markerEditText").value;
+    if (!activeMarkerId || !newName) return;
+
+    fetch("/update_marker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: activeMarkerId, name: newName })
+    }).then(() => {
+        userMarkers.forEach(m => {
+            if (m.data.id === activeMarkerId) {
+                m.data.name = newName;
+                m.leaflet.setPopupContent(newName);
+                setTimeout(() => {
+                    if (m.leaflet.getElement()) {
+                        m.leaflet.getElement().setAttribute("title", newName);
+                    }
+                }, 0);
+            }
+        });
+        closeModal();
+    });
+});
+
+document.getElementById("deleteMarkerBtn").addEventListener("click", () => {
+    if (!activeMarkerId) return;
+    fetch(`/delete_marker/${activeMarkerId}`, { method: "DELETE" })
+        .then(() => {
+            userMarkers = userMarkers.filter(m => {
+                if (m.data.id === activeMarkerId) {
+                    map.removeLayer(m.leaflet);
+                    return false;
+                }
+                return true;
+            });
+            closeModal();
+        });
+});
+
+document.getElementById("cancelMarkerBtn").addEventListener("click", closeModal);
+
+map.on("contextmenu", function (e) {
+    const name = prompt("Введите название метки:");
+    if (!name) return;
+
+    fetch("/save_marker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: name,
+            lat: e.latlng.lat,
+            lon: e.latlng.lng
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const m = L.marker([e.latlng.lat, e.latlng.lng])
+                .addTo(map)
+                .bindPopup(name)
+                .on("click", () => openEditModal({ id: data.id, name: name, lat: e.latlng.lat, lon: e.latlng.lng }));
+
+            setTimeout(() => {
+                if (m.getElement()) {
+                    m.getElement().setAttribute("title", name);
+                }
+            }, 0);
+
+            userMarkers.push({ leaflet: m, data: { id: data.id, name: name, lat: e.latlng.lat, lon: e.latlng.lng } });
+        }
+    });
+});
+
 map.on('click', function (e) {
     if (points.length >= 2) {
         alert('Можно выбрать только 2 точки! Нажмите "Очистить карту", чтобы начать заново.');
@@ -31,25 +139,20 @@ map.on('click', function (e) {
     points.push([lng, lat]);
     if (points.length === 2) {
         document.getElementById('build-route').disabled = false;
-    }    
+    }
 
     var label = points.length === 1 ? 'Стартовая точка' : 'Финишная точка';
     addMarker(lat, lng, label);
-
     console.log("Добавлена точка:", points);
 });
 
-// Построение маршрута
 document.getElementById('build-route').addEventListener('click', function () {
     if (points.length !== 2) {
         alert('Нужно выбрать ровно 2 точки!');
         return;
     }
 
-    // Получаем выбранный тип маршрута
     var routeType = document.getElementById('route-type').value;
-
-    // Удаляем старый маршрут перед новым
     if (routeLine) {
         map.removeLayer(routeLine);
         routeLine = null;
@@ -57,83 +160,56 @@ document.getElementById('build-route').addEventListener('click', function () {
 
     fetch('/route', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ points: points, profile: routeType })
     })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Маршрут получен:', data);
+    .then(response => response.json())
+    .then(data => {
+        routeLine = L.polyline(data.route, { color: 'blue' }).addTo(map);
+        map.fitBounds(routeLine.getBounds());
 
-            routeLine = L.polyline(data.route, { color: 'blue' }).addTo(map);
-            map.fitBounds(routeLine.getBounds());
+        const distanceKm = (data.distance / 1000).toFixed(2);
+        const durationMin = Math.round(data.duration / 60);
 
-            // Выводим расстояние и время
-            const distanceKm = (data.distance / 1000).toFixed(2);
-            const durationMin = Math.round(data.duration / 60);
+        document.getElementById('route-info').textContent =
+            `Расстояние: ${distanceKm} км · Время: ${durationMin} мин`;
 
-            document.getElementById('route-info').textContent =
-                `Расстояние: ${distanceKm} км · Время: ${durationMin} мин`;
-
-                // Сохраняем всё в localStorage
-localStorage.setItem('lastRoute', JSON.stringify({
-    points: points,
-    profile: routeType,
-    route: data.route,
-    distance: data.distance,
-    duration: data.duration
-}));
-
-        })
-        .catch(error => {
-            console.error('Ошибка получения маршрута:', error);
-        });
-        
-        
+        localStorage.setItem('lastRoute', JSON.stringify({
+            points: points,
+            profile: routeType,
+            route: data.route,
+            distance: data.distance,
+            duration: data.duration
+        }));
+    })
+    .catch(error => console.error('Ошибка маршрута:', error));
 });
 
-// Очистка карты
 document.getElementById('reset-map').addEventListener('click', function () {
-    // Удалить маркеры
-    markers.forEach(function (marker) {
-        map.removeLayer(marker);
-    });
+    markers.forEach(marker => map.removeLayer(marker));
     markers = [];
 
-    // Удалить маршрут
     if (routeLine) {
         map.removeLayer(routeLine);
         routeLine = null;
     }
 
-    // Очистить данные
     points = [];
-
-    // Очистить текст
     document.getElementById('route-info').textContent = '';
-
     document.getElementById('build-route').disabled = true;
-
     localStorage.removeItem('lastRoute');
 
     console.log('Карта очищена');
-
-    
 });
 
-// При загрузке страницы: восстановление маршрута
 window.addEventListener('load', () => {
     const saved = localStorage.getItem('lastRoute');
     if (!saved) return;
 
     const data = JSON.parse(saved);
-
-    // Восстановим профиль (в селекторе) ДО построения маршрута
     document.getElementById('route-type').value = data.profile;
-
-    // Восстановим точки и маркеры
     points = data.points;
+
     data.points.forEach((pair, index) => {
         const lat = pair[1];
         const lng = pair[0];
@@ -142,18 +218,13 @@ window.addEventListener('load', () => {
         markers.push(marker);
     });
 
-    // Восстановим маршрут
     routeLine = L.polyline(data.route, { color: 'blue' }).addTo(map);
     map.fitBounds(routeLine.getBounds());
 
-    // Восстановим надпись
     const distanceKm = (data.distance / 1000).toFixed(2);
     const durationMin = Math.round(data.duration / 60);
     document.getElementById('route-info').textContent =
         `Расстояние: ${distanceKm} км · Время: ${durationMin} мин`;
 
-    // Активируем кнопку построения
     document.getElementById('build-route').disabled = false;
-
-    console.log('Маршрут восстановлен из localStorage');
 });

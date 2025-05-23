@@ -47,6 +47,19 @@
     <div id="map"></div>
     <div id="route-info"></div>
 
+    <!-- 🪟 Модальное окно для редактирования метки -->
+    <div id="markerModal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Редактировать метку</h3>
+        <input type="text" id="markerEditText" placeholder="Новая подпись">
+        <div class="modal-buttons">
+          <button id="saveMarkerBtn">💾 Сохранить</button>
+          <button id="deleteMarkerBtn">🗑️ Удалить</button>
+          <button id="cancelMarkerBtn">❌ Отмена</button>
+        </div>
+      </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script src="{{ url_for('static', filename='theme.js') }}"></script>

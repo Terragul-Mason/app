@@ -45,6 +45,14 @@ class Route(db.Model):
 
     user = db.relationship('User', backref=db.backref('routes', lazy=True))
 
+class Marker(db.Model):
+    __tablename__ = 'markers'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String, nullable=False)
+    lat = db.Column(db.Float, nullable=False)
+    lon = db.Column(db.Float, nullable=False)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -130,6 +138,70 @@ def export_routes():
         mimetype='text/csv',
         headers={'Content-Disposition': f'attachment;filename={filename}'}
     )
+
+@app.route("/get_markers")
+def get_markers():
+    if "user_id" not in session:
+        return jsonify([])
+
+    markers = Marker.query.filter_by(user_id=session["user_id"]).all()
+    return jsonify([
+        {"id": m.id, "name": m.name, "lat": m.lat, "lon": m.lon}
+        for m in markers
+    ])
+
+@app.route("/save_marker", methods=["POST"])
+def save_marker():
+    if "user_id" not in session:
+        return "Unauthorized", 401
+
+    data = request.get_json()
+    name = data.get("name", "").strip()
+    lat = data.get("lat")
+    lon = data.get("lon")
+
+    if not name or lat is None or lon is None:
+        return "Bad Request", 400
+
+    marker = Marker(user_id=session["user_id"], name=name, lat=lat, lon=lon)
+    db.session.add(marker)
+    db.session.commit()
+
+    return jsonify({"success": True, "id": marker.id})
+
+@app.route("/delete_marker/<int:marker_id>", methods=["DELETE"])
+def delete_marker(marker_id):
+    if "user_id" not in session:
+        return "Unauthorized", 401
+
+    marker = Marker.query.get(marker_id)
+    if not marker or marker.user_id != session["user_id"]:
+        return "Not Found", 404
+
+    db.session.delete(marker)
+    db.session.commit()
+    return jsonify({"success": True})
+
+@app.route("/update_marker", methods=["POST"])
+def update_marker():
+    if "user_id" not in session:
+        return "Unauthorized", 401
+
+    data = request.get_json()
+    marker_id = data.get("id")
+    new_name = data.get("name", "").strip()
+
+    if not marker_id or not new_name:
+        return "Bad Request", 400
+
+    marker = Marker.query.get(marker_id)
+
+    if not marker or marker.user_id != session["user_id"]:
+        return "Not Found", 404
+
+    marker.name = new_name
+    db.session.commit()
+    return jsonify(success=True)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

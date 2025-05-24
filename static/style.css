@@ -310,3 +310,66 @@ table button:hover {
     background-color: #3737e6;
   }
   
+  /* ===== Адаптивная вёрстка ===== */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-top: 15px;
+    }
+
+    .controls, .top-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .controls select,
+    .controls button,
+    .top-buttons button,
+    .container button,
+    .container select {
+        width: 100%;
+        font-size: 16px;
+        padding: 10px;
+    }
+
+    #map {
+        height: 300px;
+        width: 100%;
+    }
+
+    .container {
+        padding: 10px;
+        width: 100%;
+        margin: 10px auto;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    #help-banner {
+        width: 95%;
+        padding: 10px;
+    }
+
+    .auth-container {
+        width: 90%;
+        margin: 40px auto;
+        padding: 20px;
+    }
+
+    #toggle-theme {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        font-size: 18px;
+    }
+}

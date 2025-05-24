@@ -5,11 +5,36 @@
     <title>Мои маршруты</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
 
-    <div style="position: relative;">
-    <button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+    <button id="toggle-theme">🌙</button>
 
+    <div style="position: relative;">
+
+        <form method="GET" action="{{ url_for('history') }}" class="filter-form">
+            <div>
+                <label>Профиль:
+                    <select name="profile">
+                        <option value="">Все</option>
+                        <option value="driving">Автомобиль</option>
+                        <option value="walking">Пешком</option>
+                        <option value="cycling">Велосипед</option>
+                    </select>
+                </label>
+        
+                <label>Дата (от): <input type="date" name="date_from"></label>
+                <label>Дата (до): <input type="date" name="date_to"></label>
+            </div>
+        
+            <div style="margin-top: 10px;">
+                <label>Мин. расстояние (км): <input type="number" step="0.1" name="min_dist"></label>
+                <label>Макс. расстояние (км): <input type="number" step="0.1" name="max_dist"></label>
+                <button type="submit">🔍 Найти</button>
+            </div>
+        </form>
+        
+    
     <div class="container">
         <h2>Мои маршруты</h2>
 

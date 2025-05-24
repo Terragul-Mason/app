@@ -75,8 +75,32 @@ def history():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    user_routes = Route.query.filter_by(user_id=session['user_id']).order_by(Route.created_at.desc()).all()
+    query = Route.query.filter_by(user_id=session['user_id'])
+
+    # Фильтрация по профилю
+    profile = request.args.get('profile')
+    if profile:
+        query = query.filter(Route.profile == profile)
+
+    # Фильтрация по дате
+    date_from = request.args.get('date_from')
+    date_to = request.args.get('date_to')
+    if date_from:
+        query = query.filter(Route.created_at >= date_from)
+    if date_to:
+        query = query.filter(Route.created_at <= date_to)
+
+    # Фильтрация по расстоянию
+    min_dist = request.args.get('min_dist', type=float)
+    max_dist = request.args.get('max_dist', type=float)
+    if min_dist is not None:
+        query = query.filter(Route.distance >= min_dist * 1000)
+    if max_dist is not None:
+        query = query.filter(Route.distance <= max_dist * 1000)
+
+    user_routes = query.order_by(Route.created_at.desc()).all()
     return render_template('history.html', routes=user_routes)
+
 
 @app.route('/delete_route/<int:route_id>', methods=['POST'])
 def delete_route(route_id):

@@ -240,8 +240,8 @@ table button:hover {
 }
 
 #toggle-theme {
-    position: absolute;
-    top: 20px;
+    position: fixed;
+    top: 150px;
     right: 20px;
     z-index: 999;
     background-color: var(--button-bg);
@@ -253,6 +253,7 @@ table button:hover {
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     transition: background-color 0.3s ease;
 }
+
 
 /* === Модальное окно === */
 .modal {

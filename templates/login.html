@@ -6,17 +6,21 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <button id="toggle-theme" style="position: absolute; top: 15px; right: 15px;">🌙</button>
+    <button id="toggle-theme">🌙</button>
 
     <div class="auth-container">
         <h2>Вход</h2>
-        <form method="post">
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+        <form method="POST">
             <input type="text" name="username" placeholder="Имя пользователя" required>
             <input type="password" name="password" placeholder="Пароль" required>
             <button type="submit">Войти</button>
         </form>
-        <a href="{{ url_for('register') }}">Создать аккаунт</a>
+        <a href="{{ url_for('register') }}">Ещё нет аккаунта? Зарегистрироваться</a>
     </div>
+
     <script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

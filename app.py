@@ -60,7 +60,7 @@ def register():
         password = request.form['password']
 
         if User.query.filter_by(username=username).first():
-            return 'Пользователь уже существует'
+            return render_template('register.html', error="Пользователь уже существует")
 
         user = User(username=username)
         user.set_password(password)
@@ -69,6 +69,7 @@ def register():
         return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 @app.route('/history')
 def history():
@@ -238,13 +239,12 @@ def login():
             session['user_id'] = user.id
             session['username'] = user.username
             session['is_admin'] = (user.username == 'admin')
-            if user.username == 'admin':
-                return redirect(url_for('admin_panel'))
-            else:
-                return redirect(url_for('index'))
-        return 'Неверный логин или пароль'
+            return redirect(url_for('admin_panel' if user.username == 'admin' else 'index'))
+
+        return render_template('login.html', error="Неверный логин или пароль")
 
     return render_template('login.html')
+
 
 @app.route('/admin')
 def admin_panel():
